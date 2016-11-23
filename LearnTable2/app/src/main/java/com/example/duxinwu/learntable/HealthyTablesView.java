@@ -64,7 +64,7 @@ public class HealthyTablesView extends View {
      */
     private int mMaxCricleColor;
 
-    private int xScale;
+    private int XScale;
     private Paint xyPaint;
 
     private String[] weeks;
@@ -173,10 +173,67 @@ public class HealthyTablesView extends View {
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        xScale = (mWidth - getPaddingRight() - getPaddingLeft() - 40) / 6;
+        XScale = (mWidth - getPaddingRight() - getPaddingLeft() - 40) / 6;
         canvas.drawColor(mBgColor);
         drawCoordinates(canvas);
         drawCoordinatesXValues(canvas);
+        drawTypeValues(canvas);
+    }
+
+    /**
+     *
+     *
+     */
+
+    private void drawTypeValues(Canvas canvas) {
+        switch (mDrawType)
+        {
+            case "activity":
+                values = new int[]
+                        { 6666, 38888, 56956, 43345, 42765, 66666, 37892 };
+                break;
+            case "breath":
+                values = new int[]
+                        { 15, 26, 18, 22, 27, 18, 20 };
+                break;
+            case "blood_oxygen":
+                values = new int[]
+                        { 96, 86, 96, 95, 99, 88, 81 };
+                break;
+            case "sinketemp":
+                values = new int[]
+                        { 33, 34, 32, 30, 36, 28, 31 };
+                break;
+            case "heartrate":
+                values = new int[]
+                        { 67, 66, 68, 74, 77, 128, 98 };
+                break;
+
+        }
+
+        int[] YValues = cacluterYValues(getArrayMax(), getArrayMin());
+        if (mDrawType.equals("sleep"))
+        {
+            values = new int[]
+                    { 7, 5, 9, 5, 6, 6, 8 };
+            YValues = new int[]
+                    { 0, 3, 6, 9, 12 };
+            linePaint.setColor(Color.parseColor("#6acfed"));
+            drawLine(canvas, YValues[4] - YValues[0], YValues[0]);
+            values = new int[]
+                    { 3, 4, 5, 2, 2, 5, 2 };
+            linePaint.setColor(Color.parseColor("#008fff"));
+            drawLine(canvas, YValues[4] - YValues[0], YValues[0]);
+
+        }
+
+        for (int i = 0; i < YValues.length; i++)
+        {
+            Log.i(TAG, mDrawType + YValues[i]);
+        }
+        // YValues[4]-YValues[0] 差值就是全部高度
+        drawYValues(canvas, YValues[4] - YValues[0], YValues);
+        drawLine(canvas, YValues[4] - YValues[0], YValues[0]);
     }
 
 
@@ -189,9 +246,9 @@ public class HealthyTablesView extends View {
         for (int i = 0; i < weeks.length; i++) {
             textPaint.getTextBounds(weeks[i],0,weeks[i].length(),textBound);
             //绘制间断点
-            canvas.drawLine(getPaddingLeft()+(i*xScale),mHeight-getPaddingBottom()-10,
-                    getPaddingLeft()+(i*xScale),mHeight-getPaddingBottom(),xyPaint);
-            canvas.drawText(weeks[i],getPaddingLeft()+(i*xScale)-textBound.width()/2,
+            canvas.drawLine(getPaddingLeft()+(i*XScale),mHeight-getPaddingBottom()-10,
+                    getPaddingLeft()+(i*XScale),mHeight-getPaddingBottom(),xyPaint);
+            canvas.drawText(weeks[i],getPaddingLeft()+(i*XScale)-textBound.width()/2,
                     mHeight-getPaddingBottom()+30,textPaint);
         }
     }
@@ -254,6 +311,182 @@ public class HealthyTablesView extends View {
         linePaint.setStrokeWidth(mLineWidth);
         linePaint.setAntiAlias(true);
         linePaint.setStyle(Paint.Style.STROKE);
+    }
 
+    /**
+     * 获取数值中的最大值
+     *
+     * @return
+     */
+    private float getArrayMax()
+    {
+
+        float max = 0;
+        for (int i = 0; i < values.length; i++)
+        {
+            float pre = Float.parseFloat(values[i] + "");
+            max = Math.max(max, pre);
+        }
+        return max;
+    }
+
+    /**
+     * 获取最小值
+     *
+     * @return
+     */
+    private float getArrayMin()
+    {
+        float min = 999999;
+        for (int i = 0; i < values.length; i++)
+        {
+            float pre = Float.parseFloat(values[i] + "");
+            min = Math.min(min, pre);
+        }
+
+        return min;
+    }
+
+
+    private void drawLine(Canvas canvas,float arrayMax,float yMin){
+        //这里是整个Y轴可用高度除以最大值，就是每个值占有刻度的几等分
+        float YScale=(mHeight-getPaddingBottom()-getPaddingTop()-40)/arrayMax;
+        for (int i = 0; i < values.length; i++)
+        {
+            //为什么是values[i] - arraymin(数据值-Y坐标最小值)?
+            //因为圆点是以数据值来画得,数据值和Y轴坐标最小值的差就是整个数据的区间;
+            int scale = (int) (values[i] - yMin);
+
+            int j;
+            /**
+             * 画折线
+             */
+            if (i < 6)
+            {
+                int textScale = (int) (values[i + 1] - yMin);
+                j = i + 1;
+                canvas.drawLine(getPaddingLeft() + (XScale * i),
+                        mHeight - getPaddingBottom() - (YScale * scale),
+                        getPaddingLeft() + (XScale * j),
+                        mHeight - getPaddingBottom() - (YScale * textScale),
+                        linePaint);
+            }
+
+            String text = String.valueOf(values[i]);
+            textPaint.getTextBounds(text, 0, text.length(), textBound);
+            canvas.drawText(text,
+                    getPaddingLeft() + (XScale * i) - textBound.width() / 2,
+                    mHeight - getPaddingBottom() - (YScale * scale) - 15,
+                    textPaint);
+
+            /**
+             * 两个小圆点
+             */
+            canvas.drawCircle(getPaddingLeft() + (XScale * i),
+                    mHeight - getPaddingBottom() - (YScale * scale), 10,
+                    maxCirclePaint);
+            canvas.drawCircle(getPaddingLeft() + (XScale * i),
+                    mHeight - getPaddingBottom() - (YScale * scale), 10 - 2,
+                    minCirclePaint);
+
+        }
+
+    }
+
+    /**
+     * 画Y轴上的数值
+     * @param canvas
+     * @param max
+     * @param value
+     */
+    private void drawYValues(Canvas canvas,float max,int[] value){
+        float YScale=((float) mHeight-getPaddingBottom()-getPaddingTop()-40)/max;
+        for (int i = 0; i < value.length; i++) {
+            Log.i(TAG,"activity="+value[i]/1000f);
+
+            String text=mDrawType.equals("activity")?String.format("%.1f",value[i]/1000f)+"k":value[i]+"";
+            int scale=value[i]-value[0];
+            textPaint.getTextBounds(text,0,text.length(),textBound);
+            //+textBound.height/2主要是为了让字体和间断线剧中
+            canvas.drawText(text,getPaddingLeft()-100,mHeight-getPaddingBottom()
+            -(YScale*scale)+textBound.height()/2,textPaint);
+            //和X轴重合的线不画
+            if (i!=0){
+                canvas.drawLine(getPaddingLeft(),mHeight-getPaddingBottom()-(YScale*scale),
+                        mWidth-getPaddingRight(),mHeight-getPaddingBottom()-(YScale*scale),xyPaint);
+            }
+        }
+    }
+
+    /**
+     * 传入数组中的最大值和最小值，计算出在Y轴上数值的区间
+     * @param max
+     * @param min
+     * @return
+     */
+    private int[] cacluterYValues(float max,float min){
+        int[] values;
+        int min1;
+        int max1;
+        int resultNum=getResultNum(min);//计算出最小值
+        max1=getResultNum(max);//计算出最大值
+        if (resultNum<=20){ //如果小于等于20 就不要减20，否则Y最小值是0了
+            min1=resultNum-10;
+        }else {
+            min1=resultNum-20;
+        }
+        if (resultNum<10||resultNum==0){
+            min1=0;
+        }
+        //将计算出来的值分为5等分
+        double ceil=Math.ceil((max1-min1)/4);
+        values= new int[]{min1, (int) (min1+ceil), (int) (min1+ceil*2), (int) (min1+ceil*3),
+                (int) (min1+ceil*4)};
+        return values;
+    }
+
+
+    /**
+     *
+     * @param num
+     * @return
+     */
+    private int getResultNum(float num){
+        int resultNum;
+        int gw=0;
+        int sw=0;
+        int bw=0;
+        int qw=0;
+        int ww=0;
+
+        if (num>0){
+            gw= (int) (num%10/1);
+        }
+        if (num>10){
+            sw= (int) (num%100/10);
+        }
+        if (num>100){
+            bw= (int) (num%1000/100);
+        }
+        if (num>1000){
+            qw= (int) (num%10000/1000);
+        }
+        if (num>10000){
+            ww= (int) (num%100000/10000);
+        }
+        /***************************************/
+        if (ww>=1){
+            resultNum=qw>5?ww*10000+10000:ww*10000+5000;
+        }else if (qw>=1){
+            resultNum=bw>5?qw*1000+1000:qw*1000+500;
+        }else if (bw>=1){
+            resultNum=bw*100+sw*10+10;
+        }else if (sw>=1){
+            resultNum=gw>5?sw*10+20:sw*10+10;
+        }else {
+            resultNum=0;
+        }
+
+        return resultNum;
     }
 }
