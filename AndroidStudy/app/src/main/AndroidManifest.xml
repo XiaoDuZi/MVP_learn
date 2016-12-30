@@ -2,6 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.du.androidstudy">
 
+    <uses-permission android:name="android.permission.CALL_PHONE" />
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -11,17 +12,23 @@
         <activity android:name=".FirstActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
         <activity android:name=".SecondActivity">
             <intent-filter>
-                <action android:name="om.example.du.androidstudy.My"/>
+                <action android:name="com.example.du.androidstudy.ACTION_START"/>
                 <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="com.example.du.androidstudy.MY"/>
             </intent-filter>
         </activity>
-        <activity android:name=".ThirdActivity"></activity>
+        <activity android:name=".ThirdActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <data android:scheme="http"/>
+            </intent-filter>
+        </activity>
     </application>
 
 </manifest>
