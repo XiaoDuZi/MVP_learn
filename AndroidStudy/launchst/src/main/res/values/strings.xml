@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">LuanchST</string>
+    <string name="firstActivity">I am FirstActivity!</string>
+    <string name="second_activity">I am SecondActivity</string>
+    <string name="second_start_firstactivity">Start FirstActivity</string>
+    <string name="first_start_secondactivity">Start SecondActivity</string>
+    <string name="three_i_am_threeactivity">I am ThreeActivity</string>
+    <string name="three_start_firstActivity">Start FirstActivity</string>
+    <string name="second_start_threeactivity">Start ThreeActivity</string>
+    <string name="three_exit">退出程序</string>
+</resources>
